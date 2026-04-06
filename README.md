@@ -41,3 +41,6 @@ API/Data: Интеграция с csxp.gg и steamcommunity.com.
 <img width="287" height="178" alt="image" src="https://github.com/user-attachments/assets/225f2e8c-2e44-4aff-b884-e6328ee9c4f3" />
 <img width="276" height="185" alt="image" src="https://github.com/user-attachments/assets/ec277e63-76f7-47cb-aaff-0da0268db0ab" />
 <img width="278" height="259" alt="image" src="https://github.com/user-attachments/assets/c934ae6b-2531-4ac9-8794-1716fa336d9c" /><img width="275" height="239" alt="image" src="https://github.com/user-attachments/assets/47110803-0111-4bdd-b581-73da17abfdbd" />
+
+
+@author = flowertouch & snek
