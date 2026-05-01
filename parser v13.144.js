@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         pars
+// @name         pars_fixed_full
 // @namespace    http://tampermonkey.net/
-// @version      13.143
-// @description  CS2 profile enhancement with KT patterns, Friend Code, XP charts, Language Selection and Custom Background.
+// @version      13.146
+// @description  Full CS2 enhancement: Fixed Friend Code, Inventory-based KT check, XP Charts, and Custom Backgrounds.
 // @author       flowertouch & snek
 // @match        *://steamcommunity.com/id/*
 // @match        *://steamcommunity.com/profiles/*
@@ -75,6 +75,7 @@
 
     const ALNUM = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+    // === ИСПРАВЛЕННАЯ ФОРМУЛА КОДА ДРУЖБЫ ===
     function encodeFriendCode(steamID64) {
         try {
             let steamid = BigInt(steamID64);
@@ -85,7 +86,10 @@
             view.setBigUint64(0, strange, true);
             let wordArray = CryptoJS.lib.WordArray.create(buffer);
             let hash = CryptoJS.MD5(wordArray);
-            let h = BigInt(hash.words[3] >>> 0);
+
+            // ИСПРАВЛЕНО: Индекс 0 вместо 3 для соответствия алгоритму CS2
+            let h = BigInt(hash.words[0] >>> 0);
+
             h = ((h & 0xFFn) << 24n) | ((h & 0xFF00n) << 8n) | ((h & 0xFF0000n) >> 8n) | (h >> 24n);
             let r = 0n;
             let tempSteamID = steamid;
@@ -469,17 +473,23 @@
             }
         }
 
-        const isKT = document.documentElement.innerHTML.includes('profile_ban_community') ||
+        // --- НОВАЯ ЛОГИКА ПРОВЕРКИ ИНВЕНТАРЯ ---
+        const hasInventoryTab = !!Array.from(document.querySelectorAll('.profile_count_link_label'))
+                                     .find(el => el.textContent.includes('Инвентарь') || el.textContent.includes('Inventory'));
+
+        // КТ есть, только если НЕТ вкладки инвентарь И найдены признаки бана
+        const isKT = !hasInventoryTab && (
+                     document.documentElement.innerHTML.includes('profile_ban_community') ||
                      (nameText === sid) ||
                      (document.querySelector('.profile_ban_status') &&
                       (document.documentElement.innerHTML.includes('Блокировка в сообществе') ||
                        document.documentElement.innerHTML.includes('Community Banned'))) ||
-                     isHiddenKT;
+                     isHiddenKT);
 
         draw(sid, {
             vac: document.documentElement.innerHTML.includes('profile_ban_status'),
             kt: isKT,
-            priv: isStandardPrivate
+            priv: isStandardPrivate && !isKT // Приватный, только если это не КТ
         });
 
         fetchExtraFromCSXP(sid);
