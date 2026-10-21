@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pars_fixed_full
 // @namespace    http://tampermonkey.net/
-// @version      13.146
+// @version      13.170
 // @description  Full CS2 enhancement: Fixed Friend Code, Inventory-based KT check, XP Charts, and Custom Backgrounds.
 // @author       flowertouch & snek
 // @match        *://steamcommunity.com/id/*
@@ -13,6 +13,7 @@
 // @grant        GM_addStyle
 // @connect      csxp.gg
 // @connect      steamcommunity.com
+// @connect      steamtrades.com
 // ==/UserScript==
 
 (function() {
@@ -25,7 +26,7 @@
             kt: "COMMUNITY BANNED (КТ)", vac: "BANNED", priv: "PRIVATE PROFILE", clean: "CLEAN ACCOUNT",
             loading: "Loading...", fcode: "FRIEND CODE:",
             nodata: "NOT ENOUGH DATA", nobans: "NO BAN HISTORY FOUND", nomedals: "MEDALS NOT FOUND",
-            min: "MIN:", max: "MAX:", last: "LAST:",
+            min: "MIN:", max: "MAX:", last: "LAST:", lvl: "LVL:",
             total: "Total:", copied: "COPIED!", created: "Создан:", hidden: "Дата скрыта",
             steamLang: "russian", bgLabel: "Background Menu:", reset: "RESET BACKGROUND",
             trans: "TRANSPARENT"
@@ -35,7 +36,7 @@
             kt: "COMMUNITY BANNED (KT)", vac: "BANNED", priv: "PRIVATE PROFILE", clean: "CLEAN ACCOUNT",
             loading: "Loading...", fcode: "FRIEND CODE:",
             nodata: "NOT ENOUGH DATA", nobans: "NO BAN HISTORY FOUND", nomedals: "MEDALS NOT FOUND",
-            min: "MIN:", max: "MAX:", last: "LAST:",
+            min: "MIN:", max: "MAX:", last: "LAST:", lvl: "LVL:",
             total: "Total:", copied: "COPIED!", created: "Created:", hidden: "Date hidden",
             steamLang: "english", bgLabel: "Background Menu:", reset: "RESET BACKGROUND",
             trans: "TRANSPARENT"
@@ -87,7 +88,6 @@
             let wordArray = CryptoJS.lib.WordArray.create(buffer);
             let hash = CryptoJS.MD5(wordArray);
 
-            // ИСПРАВЛЕНО: Индекс 0 вместо 3 для соответствия алгоритму CS2
             let h = BigInt(hash.words[0] >>> 0);
 
             h = ((h & 0xFFn) << 24n) | ((h & 0xFF00n) << 8n) | ((h & 0xFF0000n) >> 8n) | (h >> 24n);
@@ -143,15 +143,32 @@
         .ft-fcode-val:hover { background: rgba(77,255,77,0.1); }
         .ft-sid-val { cursor: pointer; transition: 0.2s; }
         .ft-sid-val:hover { color: #4dff4d !important; }
-        .ft-medal-item { width: 34px; height: 34px; object-fit: contain; border-radius: 4px; background: rgba(0,0,0,0.3); padding: 2px; border: 1px solid transparent; }
-        .ft-genuine { border-color: #4dff4d !important; box-shadow: 0 0 5px rgba(77,255,77,0.3); }
+        
+        .ft-medal-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid transparent;
+        }
+        .ft-medal-wrap.ft-genuine {
+            border-color: #4dff4d !important;
+            box-shadow: 0 0 6px rgba(77,255,77,0.35);
+            background: rgba(77,255,77,0.08) !important;
+        }
+        .ft-medal-item { width: 90%; height: 90%; object-fit: contain; border-radius: 4px; }
+
         .ft-ban-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 5px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         .ft-ban-date-time { font-size: 9px; color: #888; }
         #ft-chart-box svg { width: 100%; height: 80px; overflow: visible; }
         #ft-chart-box path { fill: none; stroke: #4dff4d; stroke-width: 1.5; }
         #ft-chart-box circle { fill: #4dff4d; cursor: pointer; transition: r 0.2s, fill 0.2s; }
         #ft-chart-box circle:hover { r: 5; fill: #fff; }
-        .ft-medals { grid-template-columns: repeat(5, 1fr) !important; gap: 5px !important; }
+        .ft-medals { display: grid; grid-template-columns: repeat(5, 1fr) !important; gap: 5px !important; }
         .ft-link-footer { color: #555; text-decoration: none; transition: 0.2s; }
         .ft-link-footer:hover { color: #fff; }
 
@@ -180,6 +197,42 @@
                 <time class="ft-ban-date-time">${formatBanDate(b.date)}</time>
             </div>
         `).join('') : `<div style="color:#666;font-size:10px;text-align:center;padding:10px;">${t.nobans}</div>`;
+    };
+
+    const fetchSteamTradesLevel = (sid) => {
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: `https://www.steamtrades.com/user/${sid}`,
+            onload: (res) => {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(res.responseText, 'text/html');
+                    const elements = Array.from(doc.querySelectorAll('div, span, td, a'));
+                    let lvlVal = null;
+
+                    for (let el of elements) {
+                        if (el.textContent.trim().toLowerCase() === 'steam level') {
+                            const next = el.nextElementSibling || el.parentElement?.nextElementSibling;
+                            if (next) {
+                                lvlVal = next.textContent.trim();
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!lvlVal) {
+                        const match = res.responseText.match(/Steam Level\s*<\/div>\s*<div>\s*([\d,]+)\s*<\/div>/i) ||
+                                      res.responseText.match(/Steam Level[\s\S]*?>\s*([\d,]+)\s*</i);
+                        if (match) lvlVal = match[1];
+                    }
+
+                    const targetEl = document.getElementById('ft-steam-lvl-val');
+                    if (targetEl) {
+                        targetEl.innerText = lvlVal ? lvlVal : '-';
+                    }
+                } catch(e) {}
+            }
+        });
     };
 
     const fetchExtraFromCSXP = (sid) => {
@@ -212,19 +265,41 @@
                 renderBanHistory(bans);
 
                 const meds = [];
-                const links = doc.querySelectorAll('a[href*="/medals/"], a[href*="/pickems/"], a[href*="/operations/"], a[href*="/pins"]');
-                links.forEach(link => {
-                    const img = link.querySelector('img');
-                    if (img) {
-                        const name = link.querySelector('.font-semibold')?.innerText || img.alt;
-                        const src = img.getAttribute('src');
-                        const fullImg = src.startsWith('http') ? src : `https://csxp.gg${src}`;
-                        const isGen = link.href.includes('/genuine') || name.toLowerCase().includes('высшей пробы');
-                        meds.push({ name, img: fullImg, genuine: isGen });
+                let collectiblesSection = null;
+                const sections = doc.querySelectorAll('section');
+                for (let sec of sections) {
+                    const h2 = sec.querySelector('h2');
+                    if (h2 && h2.textContent.trim().toLowerCase() === 'collectibles') {
+                        collectiblesSection = sec;
+                        break;
                     }
-                });
-                const container = document.querySelector('.ft-medals');
-                if (container && container.children.length === 0) renderMedals(meds);
+                }
+
+                if (collectiblesSection) {
+                    const items = collectiblesSection.querySelectorAll('a, div.inline-flex');
+                    items.forEach(item => {
+                        const img = item.querySelector('img');
+                        if (!img) return;
+
+                        const name = item.querySelector('.font-semibold')?.innerText || img.alt || '';
+                        const src = img.getAttribute('src');
+                        if (!src) return;
+
+                        const fullImg = src.startsWith('http') ? src : `https://csxp.gg${src}`;
+                        const href = item.getAttribute('href') || '';
+                        const parentCategory = item.closest('.rounded-xl')?.querySelector('.text-sm')?.textContent.trim().toLowerCase() || '';
+
+                        const uniqueKey = `${parentCategory}_${fullImg}_${name}`;
+
+                        if (!meds.some(m => m.uniqueKey === uniqueKey)) {
+                            // Подсвечиваем в зеленый ТОЛЬКО genuine пины из соответствующей категории
+                            const isGen = href.includes('/genuine') || parentCategory.includes('genuine');
+                            meds.push({ uniqueKey, name, img: fullImg, genuine: isGen });
+                        }
+                    });
+                }
+
+                renderMedals(meds);
             }
         });
     };
@@ -262,7 +337,9 @@
         const container = document.querySelector('.ft-medals');
         if (!container) return;
         container.innerHTML = meds.length ? meds.map(m => `
-            <img src="${m.img}" class="ft-medal-item ${m.genuine ? 'ft-genuine' : ''}" title="${m.name}" onerror="this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82jsWfmoRAPu609u5A2E6eia6S0Z_R15_D9_B-9m3vS_H-p9v_mXMXvX-98fS_D1tDVfhtXvMv6YCeY_u98_4p8G'">
+            <div class="ft-medal-wrap ${m.genuine ? 'ft-genuine' : ''}" title="${m.name}">
+                <img src="${m.img}" class="ft-medal-item" onerror="this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82jsWfmoRAPu609u5A2E6eia6S0Z_R15_D9_B-9m3vS_H-p9v_mXMXvX-98fS_D1tDVfhtXvMv6YCeY_u98_4p8G'">
+            </div>
         `).join('') : `<div style="color:#666;font-size:10px;grid-column:1/-1;text-align:center;padding:10px;">${t.nomedals}</div>`;
         document.getElementById('ft-counter').innerText = meds.length;
     };
@@ -292,8 +369,11 @@
                 </div>
             </div>
             <div id="ft-content" style="display: ${isCollapsed ? 'none' : 'block'}; position:relative; z-index:2;">
-                <div id="ft-status-banner" style="background:rgba(255,255,255,0.03);padding:4px 8px;border-left:4px solid ${color};margin-bottom:8px; border-radius:0 4px 4px 0;">
+                <div id="ft-status-banner" style="background:rgba(255,255,255,0.03);padding:4px 8px;border-left:4px solid ${color};margin-bottom:8px; border-radius:0 4px 4px 0; display:flex; justify-content:space-between; align-items:center;">
                     <b style="color:${color};text-transform:uppercase;font-size:9.5px;">${label}</b>
+                    <span style="font-size:9.5px;font-family:monospace;color:#aaa;font-weight:600;">
+                        ${t.lvl} <span id="ft-steam-lvl-val" style="color:#4dff4d;font-weight:bold;">...</span>
+                    </span>
                 </div>
                 <div id="ft-extra-info">
                     <div id="ft-acc-creation" style="font-size:11px; color:#4dff4d; font-weight:bold;">${t.loading}</div>
@@ -421,7 +501,7 @@
 
         const toggleTab = (mode) => {
             const statusBanner = document.getElementById('ft-status-banner');
-            if (statusBanner) statusBanner.style.display = mode === 'info' ? 'block' : 'none';
+            if (statusBanner) statusBanner.style.display = mode === 'info' ? 'flex' : 'none';
 
             document.getElementById('ft-extra-info').style.display = mode === 'info' ? 'block' : 'none';
             document.getElementById('ft-exp-content').style.display = mode === 'exp' ? 'block' : 'none';
@@ -473,46 +553,25 @@
             }
         }
 
-        // --- НОВАЯ ЛОГИКА ПРОВЕРКИ ИНВЕНТАРЯ ---
         const hasInventoryTab = !!Array.from(document.querySelectorAll('.profile_count_link_label'))
                                      .find(el => el.textContent.includes('Инвентарь') || el.textContent.includes('Inventory'));
 
-        // КТ есть, только если НЕТ вкладки инвентарь И найдены признаки бана
         const isKT = !hasInventoryTab && (
-                     document.documentElement.innerHTML.includes('profile_ban_community') ||
-                     (nameText === sid) ||
-                     (document.querySelector('.profile_ban_status') &&
-                      (document.documentElement.innerHTML.includes('Блокировка в сообществе') ||
-                       document.documentElement.innerHTML.includes('Community Banned'))) ||
-                     isHiddenKT);
+                   document.documentElement.innerHTML.includes('profile_ban_community') ||
+                   (nameText === sid) ||
+                   (document.querySelector('.profile_ban_status') &&
+                    (document.documentElement.innerHTML.includes('Блокировка в сообществе') ||
+                     document.documentElement.innerHTML.includes('Community Banned'))) ||
+                   isHiddenKT);
 
         draw(sid, {
             vac: document.documentElement.innerHTML.includes('profile_ban_status'),
             kt: isKT,
-            priv: isStandardPrivate && !isKT // Приватный, только если это не КТ
+            priv: isStandardPrivate && !isKT
         });
 
+        fetchSteamTradesLevel(sid);
         fetchExtraFromCSXP(sid);
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: `https://steamcommunity.com/inventory/${sid}/730/2?l=${t.steamLang}&count=2000`,
-            onload: (res) => {
-                try {
-                    const data = JSON.parse(res.responseText);
-                    if (data?.descriptions) {
-                        const meds = data.descriptions
-                            .filter(x => x.tags?.some(t => t.internal_name === "CSGO_Type_Collectible"))
-                            .map(m => ({
-                                name: m.name,
-                                img: `https://community.cloudflare.steamstatic.com/economy/image/${m.icon_url}`,
-                                genuine: m.name.toLowerCase().includes('высшей пробы') || m.name_color === "4dff4d"
-                            }));
-                        if (meds.length > 0) renderMedals(meds);
-                    }
-                } catch(e) {}
-            }
-        });
     };
 
     setTimeout(run, 500);
