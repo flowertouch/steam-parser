@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pars_fixed_full
 // @namespace    http://tampermonkey.net/
-// @version      13.176
+// @version      13.179
 // @description  Full CS2 enhancement: Fixed Friend Code, Inventory-based KT check, XP Charts, and Custom Backgrounds.
 // @author       flowertouch & snek
 // @match        *://steamcommunity.com/id/*
@@ -154,13 +154,15 @@
             justify-content: center;
             background: rgba(0,0,0,0.3);
             border: 1px solid transparent;
+            box-sizing: border-box;
         }
         .ft-medal-wrap.ft-genuine {
             border-color: #aaaaaa !important;
             box-shadow: 0 0 6px rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.08) !important;
         }
-        .ft-medal-item { width: 90%; height: 90%; object-fit: contain; border-radius: 4px; }
+        /* Чуть уменьшены медали, чтобы исключить горизонтальную полосу */
+        .ft-medal-item { width: 80%; height: 80%; object-fit: contain; border-radius: 4px; }
 
         .ft-ban-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 5px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         .ft-ban-date-time { font-size: 9px; color: #888; }
@@ -169,8 +171,27 @@
         #ft-chart-box circle { fill: #aaaaaa; cursor: pointer; transition: r 0.2s, fill 0.2s; }
         #ft-chart-box circle:hover { r: 5; fill: #fff; }
         
-        /* Сетка медалей ровно по 4 в ряд */
-        .ft-medals { display: grid; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
+        /* Компактная сетка медалей с вертикальным скроллом без горизонтального */
+        .ft-medals { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr) !important; 
+            gap: 5px !important; 
+            margin-top: 10px; 
+            max-height: 190px !important; 
+            overflow-y: auto !important; 
+            overflow-x: hidden !important;
+            padding-right: 2px;
+            box-sizing: border-box;
+        }
+
+        /* Фоновое фото поднят вверх (top center), чтобы были видны ушки */
+        #ft-con-content {
+            background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://abrakadabra.fun/uploads/posts/2022-01/thumbs/1642955051_8-abrakadabra-fun-p-devochka-koshka-art-19.jpg') !important;
+            background-size: cover !important;
+            background-position: top center !important;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
         
         .ft-link-footer { color: #555; text-decoration: none; transition: 0.2s; }
         .ft-link-footer:hover { color: #fff; }
@@ -182,6 +203,22 @@
         .ft-preset-btn { flex: 1; background: #333; border: 1px solid #555; color: #eee; font-size: 9px; padding: 5px; cursor: pointer; border-radius: 3px; text-align: center; transition: 0.2s; }
         .ft-preset-btn:hover { background: #444; border-color: #777; }
         #ft-bg-clear:hover { color: #ff6666 !important; background: rgba(255,51,51,0.1) !important; }
+
+        /* Эффект снега */
+        .ft-snowflake {
+            position: fixed;
+            top: -10px;
+            background: #ffffff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999999;
+            opacity: 0.8;
+            animation: ft-fall linear infinite;
+        }
+        @keyframes ft-fall {
+            0% { transform: translateY(0px) translateX(0px); }
+            100% { transform: translateY(105vh) translateX(20px); }
+        }
     `);
 
     const formatBanDate = (dateStr) => {
@@ -346,6 +383,27 @@
         document.getElementById('ft-counter').innerText = meds.length;
     };
 
+    // Функция запуска снега
+    const startSnow = () => {
+        const snowCount = 40;
+        for (let i = 0; i < snowCount; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'ft-snowflake';
+            const size = Math.random() * 4 + 2;
+            snowflake.style.width = `${size}px`;
+            snowflake.style.height = `${size}px`;
+            snowflake.style.left = `${Math.random() * 100}vw`;
+            const duration = Math.random() * 3 + 2;
+            snowflake.style.animationDuration = `${duration}s`;
+            snowflake.style.animationDelay = `${Math.random() * 2}s`;
+            document.body.appendChild(snowflake);
+
+            setTimeout(() => {
+                snowflake.remove();
+            }, (duration + 2) * 1000);
+        }
+    };
+
     const draw = (sid, status) => {
         if (document.getElementById('ft-box')) return;
         const rightCol = document.querySelector('.profile_rightcol');
@@ -353,7 +411,6 @@
         const box = document.createElement('div');
         box.id = 'ft-box';
 
-        // Серый цвет для отличных аккаунтов без нарушений вместо зеленого
         let color = status.kt || status.vac ? '#ff4d4d' : (status.priv ? '#ffb84d' : '#aaaaaa');
         let label = status.kt ? t.kt : (status.vac ? t.vac : (status.priv ? t.priv : t.clean));
 
@@ -393,14 +450,14 @@
                 <div id="ft-banh-content" style="display:none; margin-top:10px; max-height:150px; overflow-y:auto;">
                     <div id="ft-ban-list">${t.loading}</div>
                 </div>
-                <div id="ft-con-content" style="display:none; margin-top:10px; text-align:center; padding:12px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                <div id="ft-con-content" style="display:none; margin-top:10px; text-align:center; padding:12px;">
                     <div style="font-size:10px; color:#ccc; margin-bottom:6px; font-weight:600;">${t.contactsText}</div>
                     <a href="https://fakecrime.bio/413" target="_blank" style="font-size:11px; color:#cccccc; text-decoration:none; font-weight:bold; font-family:monospace; display:block; margin-bottom:10px;">https://fakecrime.bio/413</a>
                     <div>
-                        <a href="https://www.myinstants.com/instant/nyaa-15974/" target="_blank" style="font-size:11px; color:#ff77aa; text-decoration:none; font-weight:bold; background:rgba(255,119,170,0.1); padding:4px 10px; border-radius:4px; border:1px solid rgba(255,119,170,0.3);">nya</a>
+                        <span id="ft-nya-btn" style="font-size:10px; color:#ff77aa; cursor:pointer; font-weight:bold; transition:0.2s;">nya</span>
                     </div>
                 </div>
-                <div class="ft-medals" style="display:none; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:10px; max-height:200px; overflow-y:auto;"></div>
+                <div class="ft-medals" style="display:none;"></div>
 
                 <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px; display:flex; justify-content:space-between; font-size:9px;">
                     <div style="position:relative; display:flex; align-items:center; gap:8px;">
@@ -496,7 +553,11 @@
             };
         });
 
-        // Полное копирование полного ID64 по клику на надпись id64
+        // Клик по надписи nya для запуска снега
+        document.getElementById('ft-nya-btn').onclick = function() {
+            startSnow();
+        };
+
         document.getElementById('ft-copy-sid').onclick = function() {
             navigator.clipboard.writeText(sid);
             const oldText = this.innerText;
