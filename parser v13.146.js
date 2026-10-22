@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pars_fixed_full
 // @namespace    http://tampermonkey.net/
-// @version      13.170
+// @version      13.176
 // @description  Full CS2 enhancement: Fixed Friend Code, Inventory-based KT check, XP Charts, and Custom Backgrounds.
 // @author       flowertouch & snek
 // @match        *://steamcommunity.com/id/*
@@ -22,24 +22,24 @@
     // === ЛОКАЛИЗАЦИЯ (RU / EN) ===
     const langConfig = {
         ru: {
-            inf: "INFO", exp: "EXP", med: "PINS", banh: "BANS",
+            inf: "INFO", exp: "EXP", med: "PINS", banh: "BANS", con: "CON",
             kt: "COMMUNITY BANNED (КТ)", vac: "BANNED", priv: "PRIVATE PROFILE", clean: "CLEAN ACCOUNT",
             loading: "Loading...", fcode: "FRIEND CODE:",
             nodata: "NOT ENOUGH DATA", nobans: "NO BAN HISTORY FOUND", nomedals: "MEDALS NOT FOUND",
             min: "MIN:", max: "MAX:", last: "LAST:", lvl: "LVL:",
             total: "Total:", copied: "COPIED!", created: "Создан:", hidden: "Дата скрыта",
             steamLang: "russian", bgLabel: "Background Menu:", reset: "RESET BACKGROUND",
-            trans: "TRANSPARENT"
+            trans: "TRANSPARENT", contactsText: "Contacts for communication:"
         },
         en: {
-            inf: "INFO", exp: "EXP", med: "PINS", banh: "BANS",
+            inf: "INFO", exp: "EXP", med: "PINS", banh: "BANS", con: "CON",
             kt: "COMMUNITY BANNED (KT)", vac: "BANNED", priv: "PRIVATE PROFILE", clean: "CLEAN ACCOUNT",
             loading: "Loading...", fcode: "FRIEND CODE:",
             nodata: "NOT ENOUGH DATA", nobans: "NO BAN HISTORY FOUND", nomedals: "MEDALS NOT FOUND",
             min: "MIN:", max: "MAX:", last: "LAST:", lvl: "LVL:",
             total: "Total:", copied: "COPIED!", created: "Created:", hidden: "Date hidden",
             steamLang: "english", bgLabel: "Background Menu:", reset: "RESET BACKGROUND",
-            trans: "TRANSPARENT"
+            trans: "TRANSPARENT", contactsText: "Contacts for communication:"
         }
     };
 
@@ -76,7 +76,7 @@
 
     const ALNUM = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    // === ИСПРАВЛЕННАЯ ФОРМУЛА КОДА ДРУЖБЫ ===
+    // === ФОРМУЛА КОДА ДРУЖБЫ ===
     function encodeFriendCode(steamID64) {
         try {
             let steamid = BigInt(steamID64);
@@ -134,15 +134,15 @@
             box-shadow: none !important;
         }
         .ft-btn { background: rgba(255,255,255,0.1); border: 1px solid #444; color: #ccc; font-size: 8px; cursor: pointer; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
-        .ft-btn.active { border-color: #4dff4d; color: #4dff4d; background: rgba(77,255,77,0.1); }
+        .ft-btn.active { border-color: #888; color: #eee; background: rgba(255,255,255,0.2); }
         .ft-btn:hover { background: rgba(255,255,255,0.2); }
         .ft-btn-sh { background: rgba(255,255,255,0.05); color: #888; font-size: 10px; text-decoration: none; border-radius: 4px; border: 1px solid #333; padding: 4px; flex: 1; text-align: center; }
         .ft-btn-sh:hover { color: #fff; border-color: #555; }
         .ft-fcode-box { margin-top: 8px; font-size: 10px; color: #aaa; display: flex; align-items: center; gap: 5px; }
-        .ft-fcode-val { color: #4dff4d; font-family: monospace; font-size: 11px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px; border: 1px solid rgba(77,255,77,0.2); cursor: pointer; transition: 0.2s; }
-        .ft-fcode-val:hover { background: rgba(77,255,77,0.1); }
-        .ft-sid-val { cursor: pointer; transition: 0.2s; }
-        .ft-sid-val:hover { color: #4dff4d !important; }
+        .ft-fcode-val { color: #ccc; font-family: monospace; font-size: 11px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s; }
+        .ft-fcode-val:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .ft-sid-val { cursor: pointer; transition: 0.2s; font-family: monospace; font-size: 10px; }
+        .ft-sid-val:hover { color: #fff !important; }
         
         .ft-medal-wrap {
             position: relative;
@@ -156,19 +156,22 @@
             border: 1px solid transparent;
         }
         .ft-medal-wrap.ft-genuine {
-            border-color: #4dff4d !important;
-            box-shadow: 0 0 6px rgba(77,255,77,0.35);
-            background: rgba(77,255,77,0.08) !important;
+            border-color: #aaaaaa !important;
+            box-shadow: 0 0 6px rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08) !important;
         }
         .ft-medal-item { width: 90%; height: 90%; object-fit: contain; border-radius: 4px; }
 
         .ft-ban-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 5px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         .ft-ban-date-time { font-size: 9px; color: #888; }
         #ft-chart-box svg { width: 100%; height: 80px; overflow: visible; }
-        #ft-chart-box path { fill: none; stroke: #4dff4d; stroke-width: 1.5; }
-        #ft-chart-box circle { fill: #4dff4d; cursor: pointer; transition: r 0.2s, fill 0.2s; }
+        #ft-chart-box path { fill: none; stroke: #aaaaaa; stroke-width: 1.5; }
+        #ft-chart-box circle { fill: #aaaaaa; cursor: pointer; transition: r 0.2s, fill 0.2s; }
         #ft-chart-box circle:hover { r: 5; fill: #fff; }
-        .ft-medals { display: grid; grid-template-columns: repeat(5, 1fr) !important; gap: 5px !important; }
+        
+        /* Сетка медалей ровно по 4 в ряд */
+        .ft-medals { display: grid; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
+        
         .ft-link-footer { color: #555; text-decoration: none; transition: 0.2s; }
         .ft-link-footer:hover { color: #fff; }
 
@@ -292,7 +295,6 @@
                         const uniqueKey = `${parentCategory}_${fullImg}_${name}`;
 
                         if (!meds.some(m => m.uniqueKey === uniqueKey)) {
-                            // Подсвечиваем в зеленый ТОЛЬКО genuine пины из соответствующей категории
                             const isGen = href.includes('/genuine') || parentCategory.includes('genuine');
                             meds.push({ uniqueKey, name, img: fullImg, genuine: isGen });
                         }
@@ -322,12 +324,12 @@
         const last = coords[coords.length - 1];
         box.innerHTML = `
             <svg viewBox="0 -5 ${width} ${height + 10}">
-                <path d="M ${coords.map(c => `${c.x},${c.y}`).join(' L ')}" stroke="#4dff4d" fill="none" stroke-width="1.5" />
-                ${coords.map(c => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#4dff4d"><title>${c.date}\nLevel: ${c.lvl} (${c.xp} XP)</title></circle>`).join('')}
+                <path d="M ${coords.map(c => `${c.x},${c.y}`).join(' L ')}" stroke="#aaaaaa" fill="none" stroke-width="1.5" />
+                ${coords.map(c => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#aaaaaa"><title>${c.date}\nLevel: ${c.lvl} (${c.xp} XP)</title></circle>`).join('')}
             </svg>
             <div style="display:flex;justify-content:space-between;font-size:9px;color:#555;margin-top:2px;">
                 <span>${t.min} ${minL.toFixed(1)}</span>
-                <span style="color:#4dff4d; font-weight:bold;">${t.last} ${last.lvl} (${last.xp} XP)</span>
+                <span style="color:#aaaaaa; font-weight:bold;">${t.last} ${last.lvl} (${last.xp} XP)</span>
                 <span>${t.max} ${maxL.toFixed(1)}</span>
             </div>
         `;
@@ -351,7 +353,8 @@
         const box = document.createElement('div');
         box.id = 'ft-box';
 
-        let color = status.kt || status.vac ? '#ff4d4d' : (status.priv ? '#ffb84d' : '#4dff4d');
+        // Серый цвет для отличных аккаунтов без нарушений вместо зеленого
+        let color = status.kt || status.vac ? '#ff4d4d' : (status.priv ? '#ffb84d' : '#aaaaaa');
         let label = status.kt ? t.kt : (status.vac ? t.vac : (status.priv ? t.priv : t.clean));
 
         const fcode = encodeFriendCode(sid);
@@ -359,12 +362,13 @@
 
         box.innerHTML = `
             <div style="font-size:9px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center; position:relative; z-index:2;">
-                <span id="ft-copy-sid" class="ft-sid-val" style="font-weight:bold; color:#aaa; margin-right: 15px;">${sid}</span>
+                <span id="ft-copy-sid" class="ft-sid-val" style="font-weight:bold; color:#aaa; margin-right: 15px;" title="Click to copy full ID64">id64</span>
                 <div style="display:flex; gap:3px;">
                     <button id="ft-btn-info" class="ft-btn active">${t.inf}</button>
                     <button id="ft-btn-exp" class="ft-btn">${t.exp}</button>
                     <button id="ft-btn-meds" class="ft-btn">${t.med}</button>
                     <button id="ft-btn-banh" class="ft-btn">${t.banh}</button>
+                    <button id="ft-btn-con" class="ft-btn">${t.con}</button>
                     <span id="ft-toggle" style="cursor:pointer; padding:0 5px; font-size:7px; opacity: 0.8; display:flex; align-items:center;">${isCollapsed ? '+' : '—'}</span>
                 </div>
             </div>
@@ -372,11 +376,11 @@
                 <div id="ft-status-banner" style="background:rgba(255,255,255,0.03);padding:4px 8px;border-left:4px solid ${color};margin-bottom:8px; border-radius:0 4px 4px 0; display:flex; justify-content:space-between; align-items:center;">
                     <b style="color:${color};text-transform:uppercase;font-size:9.5px;">${label}</b>
                     <span style="font-size:9.5px;font-family:monospace;color:#aaa;font-weight:600;">
-                        ${t.lvl} <span id="ft-steam-lvl-val" style="color:#4dff4d;font-weight:bold;">...</span>
+                        ${t.lvl} <span id="ft-steam-lvl-val" style="color:#cccccc;font-weight:bold;">...</span>
                     </span>
                 </div>
                 <div id="ft-extra-info">
-                    <div id="ft-acc-creation" style="font-size:11px; color:#4dff4d; font-weight:bold;">${t.loading}</div>
+                    <div id="ft-acc-creation" style="font-size:11px; color:#aaa; font-weight:bold;">${t.loading}</div>
                     <div class="ft-fcode-box">${t.fcode} <span id="ft-copy-code" class="ft-fcode-val">${fcode}</span></div>
                     <div style="display:flex; gap:5px; margin-top:10px;">
                         <a href="https://steamid.uk/profile/${sid}" target="_blank" class="ft-btn-sh">steamid.uk</a>
@@ -389,7 +393,14 @@
                 <div id="ft-banh-content" style="display:none; margin-top:10px; max-height:150px; overflow-y:auto;">
                     <div id="ft-ban-list">${t.loading}</div>
                 </div>
-                <div class="ft-medals" style="display:none; grid-template-columns: repeat(5, 1fr); gap:5px; margin-top:10px; max-height:200px; overflow-y:auto;"></div>
+                <div id="ft-con-content" style="display:none; margin-top:10px; text-align:center; padding:12px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size:10px; color:#ccc; margin-bottom:6px; font-weight:600;">${t.contactsText}</div>
+                    <a href="https://fakecrime.bio/413" target="_blank" style="font-size:11px; color:#cccccc; text-decoration:none; font-weight:bold; font-family:monospace; display:block; margin-bottom:10px;">https://fakecrime.bio/413</a>
+                    <div>
+                        <a href="https://www.myinstants.com/instant/nyaa-15974/" target="_blank" style="font-size:11px; color:#ff77aa; text-decoration:none; font-weight:bold; background:rgba(255,119,170,0.1); padding:4px 10px; border-radius:4px; border:1px solid rgba(255,119,170,0.3);">nya</a>
+                    </div>
+                </div>
+                <div class="ft-medals" style="display:none; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:10px; max-height:200px; overflow-y:auto;"></div>
 
                 <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px; display:flex; justify-content:space-between; font-size:9px;">
                     <div style="position:relative; display:flex; align-items:center; gap:8px;">
@@ -398,8 +409,8 @@
                         <svg id="ft-lang-gear" style="width:14px;height:14px;cursor:pointer;fill:#888;transition:fill 0.3s;" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
 
                         <div id="ft-lang-menu" style="display:none; position:absolute; bottom:20px; left:40px; background:rgba(20,20,20,0.95); border:1px solid #444; border-radius:4px; padding:4px; z-index:999;">
-                            <div class="ft-lang-opt" data-lang="ru" style="padding:4px 8px; cursor:pointer; font-size:10px; border-radius:3px; color:${currentLang === 'ru' ? '#4dff4d' : '#ccc'}; font-weight:${currentLang === 'ru' ? 'bold' : 'normal'};">🇷🇺 RU</div>
-                            <div class="ft-lang-opt" data-lang="en" style="padding:4px 8px; cursor:pointer; font-size:10px; border-radius:3px; color:${currentLang === 'en' ? '#4dff4d' : '#ccc'}; font-weight:${currentLang === 'en' ? 'bold' : 'normal'};">🇬🇧 EN</div>
+                            <div class="ft-lang-opt" data-lang="ru" style="padding:4px 8px; cursor:pointer; font-size:10px; border-radius:3px; color:${currentLang === 'ru' ? '#cccccc' : '#ccc'}; font-weight:${currentLang === 'ru' ? 'bold' : 'normal'};">🇷🇺 RU</div>
+                            <div class="ft-lang-opt" data-lang="en" style="padding:4px 8px; cursor:pointer; font-size:10px; border-radius:3px; color:${currentLang === 'en' ? '#cccccc' : '#ccc'}; font-weight:${currentLang === 'en' ? 'bold' : 'normal'};">🇬🇧 EN</div>
                         </div>
 
                         <div id="ft-bg-menu" style="display:none; position:absolute; bottom:25px; left:0px; background:rgba(20,20,20,0.95); border:1px solid #444; border-radius:4px; padding:8px; z-index:999; width: 180px; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">
@@ -485,6 +496,7 @@
             };
         });
 
+        // Полное копирование полного ID64 по клику на надпись id64
         document.getElementById('ft-copy-sid').onclick = function() {
             navigator.clipboard.writeText(sid);
             const oldText = this.innerText;
@@ -505,18 +517,22 @@
 
             document.getElementById('ft-extra-info').style.display = mode === 'info' ? 'block' : 'none';
             document.getElementById('ft-exp-content').style.display = mode === 'exp' ? 'block' : 'none';
+            document.getElementById('ft-banh-content').style.display = mode === 'banh' ? 'block' : 'none';
+            document.getElementById('ft-con-content').style.display = mode === 'con' ? 'block' : 'none';
+            document.querySelector('.ft-medals').style.display = mode === 'meds' ? 'grid' : 'none';
+
             document.getElementById('ft-btn-info').classList.toggle('active', mode === 'info');
             document.getElementById('ft-btn-exp').classList.toggle('active', mode === 'exp');
             document.getElementById('ft-btn-meds').classList.toggle('active', mode === 'meds');
             document.getElementById('ft-btn-banh').classList.toggle('active', mode === 'banh');
-            document.getElementById('ft-banh-content').style.display = mode === 'banh' ? 'block' : 'none';
-            document.querySelector('.ft-medals').style.display = mode === 'meds' ? 'grid' : 'none';
+            document.getElementById('ft-btn-con').classList.toggle('active', mode === 'con');
         };
 
         document.getElementById('ft-btn-info').onclick = () => toggleTab('info');
         document.getElementById('ft-btn-exp').onclick = () => toggleTab('exp');
         document.getElementById('ft-btn-meds').onclick = () => toggleTab('meds');
         document.getElementById('ft-btn-banh').onclick = () => toggleTab('banh');
+        document.getElementById('ft-btn-con').onclick = () => toggleTab('con');
 
         document.getElementById('ft-toggle').onclick = () => {
             const c = document.getElementById('ft-content'), h = c.style.display === 'none';
