@@ -26,9 +26,13 @@ API/Data: Интеграция с csxp.gg и steamcommunity.com.
 
 Скриншоты меню:
 
-<img width="287" height="178" alt="image" src="https://github.com/user-attachments/assets/225f2e8c-2e44-4aff-b884-e6328ee9c4f3" />
-<img width="276" height="185" alt="image" src="https://github.com/user-attachments/assets/ec277e63-76f7-47cb-aaff-0da0268db0ab" />
-<img width="278" height="259" alt="image" src="https://github.com/user-attachments/assets/c934ae6b-2531-4ac9-8794-1716fa336d9c" /><img width="275" height="239" alt="image" src="https://github.com/user-attachments/assets/47110803-0111-4bdd-b581-73da17abfdbd" />
+<img width="331" height="209" alt="image" src="https://github.com/user-attachments/assets/c10f79ae-ede8-416d-8b5a-9aa02d52575b" />
+<img width="286" height="207" alt="image" src="https://github.com/user-attachments/assets/98850245-b206-4133-9b4f-fd3560c75a64" />
+<img width="306" height="301" alt="image" src="https://github.com/user-attachments/assets/b145ef36-779e-46b7-ad68-2164468368ce" />
+<img width="319" height="252" alt="image" src="https://github.com/user-attachments/assets/52ddd86f-00f8-4af3-b8d0-c485c738cc62" />
+<img width="329" height="192" alt="image" src="https://github.com/user-attachments/assets/366c933f-9948-4025-a0ae-318edafa1cc2" />
+
+
 
 
 @author = flowertouch & snek
