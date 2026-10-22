@@ -17,7 +17,8 @@ Language: JavaScript (ES6+)
 Platform: Tampermonkey / Grease-monkey
 Libraries: CryptoJS (для шифрования кодов).
 API/Data: Интеграция с csxp.gg и steamcommunity.com.
-Добавлен LVL
+
+Добавлен LVL,вкладка con,измнен цвет на серый
 
 Установка :
 Установите расширение Tampermonkey для вашего браузера.
