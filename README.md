@@ -24,13 +24,10 @@ API/Data: Интеграция с csxp.gg и steamcommunity.com.
 Создайте новый скрипт и вставьте содержимое файла pars.user.js (или скопируйте код из этого репозитория).
 Перейдите на любой профиль Steam, чтобы увидеть изменения.
 
-Скриншоты меню:
+Скриншоты нового меню:
 
-<img width="331" height="209" alt="image" src="https://github.com/user-attachments/assets/c10f79ae-ede8-416d-8b5a-9aa02d52575b" />
-<img width="286" height="207" alt="image" src="https://github.com/user-attachments/assets/98850245-b206-4133-9b4f-fd3560c75a64" />
-<img width="306" height="301" alt="image" src="https://github.com/user-attachments/assets/b145ef36-779e-46b7-ad68-2164468368ce" />
-<img width="319" height="252" alt="image" src="https://github.com/user-attachments/assets/52ddd86f-00f8-4af3-b8d0-c485c738cc62" />
-<img width="329" height="192" alt="image" src="https://github.com/user-attachments/assets/366c933f-9948-4025-a0ae-318edafa1cc2" />
+<img width="1800" height="1420" alt="image" src="https://github.com/user-attachments/assets/33826913-8af0-423b-8885-f95e122216c9" />
+
 
 
 
