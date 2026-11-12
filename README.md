@@ -25,11 +25,5 @@ API/Data: Интеграция с csxp.gg и steamcommunity.com.
 Перейдите на любой профиль Steam, чтобы увидеть изменения.
 
 Скриншоты нового меню:
-
-<img width="1800" height="1420" alt="image" src="https://github.com/user-attachments/assets/33826913-8af0-423b-8885-f95e122216c9" />
-
-
-
-
-
-@author = flowertouch & snek
+<img width="1412" height="1114" alt="725b5bc8-3668-454e-8df8-df3c3a4aae80" src="https://github.com/user-attachments/assets/2dbe9a5a-dba9-4564-b84a-8b1380a4f5be" />
+authors = flowertouch & snek
